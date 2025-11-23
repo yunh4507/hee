@@ -1,0 +1,352 @@
+{\rtf1\ansi\ansicpg949\cocoartf2865
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 <!DOCTYPE html>\
+<html lang="ko">\
+<head>\
+  <meta charset="UTF-8">\
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">\
+  <title>\uc0\u44284 \u51228  #3 - Interactive Rabbit</title>\
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.9/lib/p5.min.js"></script>\
+  <style>\
+    body \{\
+      margin: 0;\
+      padding: 0;\
+      overflow: hidden;\
+    \}\
+    .back-btn \{\
+      position: fixed;\
+      top: 20px;\
+      left: 20px;\
+      padding: 10px 20px;\
+      background: white;\
+      border: 2px solid #667eea;\
+      color: #667eea;\
+      text-decoration: none;\
+      border-radius: 20px;\
+      font-weight: bold;\
+      z-index: 1000;\
+    \}\
+    .back-btn:hover \{\
+      background: #667eea;\
+      color: white;\
+    \}\
+    .info \{\
+      position: fixed;\
+      top: 20px;\
+      right: 20px;\
+      background: rgba(255,255,255,0.9);\
+      padding: 15px;\
+      border-radius: 10px;\
+      font-size: 14px;\
+      z-index: 1000;\
+    \}\
+    .info h3 \{\
+      margin: 0 0 10px 0;\
+      color: #667eea;\
+    \}\
+    .info p \{\
+      margin: 5px 0;\
+      color: #333;\
+    \}\
+  </style>\
+</head>\
+<body>\
+  <a href="index.html" class="back-btn">\uc0\u8592  \u47700 \u51064 \u51004 \u47196 </a>\
+  <div class="info">\
+    <h3>\uc0\u55357 \u56481  \u51064 \u53552 \u47001 \u49496  \u44032 \u51060 \u46300 </h3>\
+    <p>\uc0\u55357 \u56753 \u65039  \u47560 \u50864 \u49828  \u51060 \u46041  \u8594  \u45576  \u44636 \u48149 \u51076 </p>\
+    <p>\uc0\u55357 \u56753 \u65039  \u53364 \u47533  \u8594  \u48120 \u49548  + \u54540 \u47000 \u49884 </p>\
+    <p>\uc0\u55357 \u56753 \u65039  \u50612 \u44648  \u54840 \u48260  \u8594  \u50612 \u44648  \u50732 \u46972 \u44048 </p>\
+    <p>\uc0\u9000 \u65039  \u53412 \u48372 \u46300  \u8594  \u45440 \u46988  \u54364 \u51221 </p>\
+  </div>\
+  <script>\
+    let hairSwingX = 0;\
+    let hairSwingAmount = 1.3;\
+    let hairSwingSpeed = 0.05;\
+    let blinkTimer = 0;\
+    let isBlinking = false;\
+    let blinkDuration = 10;\
+    let lastMouseX = 0;\
+    let lastMouseY = 0;\
+    let flashAlpha = 0;\
+    let flashRadius = 0;\
+    let isSmiling = false;\
+    let smileTimer = 0;\
+    let blushXOffset = 40;\
+    let blushYOffset = -93;\
+    let blushWidth = 22;\
+    let blushHeight = 15;\
+    let leftShoulderLift = 0;\
+    let rightShoulderLift = 0;\
+    let shoulderLiftAmount = 15;\
+    let isSurprised = false;\
+    let surpriseTimer = 0;\
+    let eyeFollowMouse = true;\
+    let pupilOffsetX = 0;\
+    let pupilOffsetY = 0;\
+\
+    function setup() \{\
+      createCanvas(windowWidth, windowHeight);\
+      background(0);\
+      lastMouseX = mouseX;\
+      lastMouseY = mouseY;\
+    \}\
+\
+    function draw() \{\
+      background(230);\
+      hairSwingX = sin(frameCount * hairSwingSpeed) * hairSwingAmount;\
+      let mouseMoved = abs(mouseX - lastMouseX) > 8 || abs(mouseY - lastMouseY) > 8;\
+      \
+      if (mouseMoved && !isBlinking) \{\
+        isBlinking = true;\
+        blinkTimer = blinkDuration;\
+      \}\
+      \
+      if (isBlinking) \{\
+        blinkTimer--;\
+        if (blinkTimer <= 0) \{\
+          isBlinking = false;\
+        \}\
+      \}\
+      \
+      if (isSmiling) \{\
+        smileTimer--;\
+        if (smileTimer <= 0) \{\
+          isSmiling = false;\
+        \}\
+      \}\
+      \
+      if (isSurprised) \{\
+        surpriseTimer--;\
+        if (surpriseTimer <= 0) \{\
+          isSurprised = false;\
+        \}\
+      \}\
+      \
+      if (eyeFollowMouse && !isBlinking && !isSurprised) \{\
+        let charX = width / 2;\
+        let charY = height - 250 - 108 * 1.8;\
+        let angle = atan2(mouseY - charY, mouseX - charX);\
+        pupilOffsetX = constrain(cos(angle) * 4, -4, 4);\
+        pupilOffsetY = constrain(sin(angle) * 3, -3, 3);\
+      \} else \{\
+        pupilOffsetX = 0;\
+        pupilOffsetY = 0;\
+      \}\
+      \
+      checkShoulderHover();\
+      lastMouseX = mouseX;\
+      lastMouseY = mouseY;\
+      drawRabbit(width / 2, height - 250, 1.8);\
+      \
+      if (flashRadius > 0) \{\
+        push();\
+        let centerX = width / 2;\
+        let centerY = height - 250 - 108 * 1.8;\
+        for (let i = 0; i < 8; i++) \{\
+          let alpha = map(i, 0, 8, 255, 0);\
+          let radius = flashRadius * (1 - i * 0.12);\
+          fill(255, 255, 255, alpha * (flashRadius / 800));\
+          noStroke();\
+          ellipse(centerX, centerY, radius * 2, radius * 2);\
+        \}\
+        pop();\
+        flashRadius += 50;\
+        if (flashRadius > 800) \{\
+          flashRadius = 0;\
+        \}\
+      \}\
+      \
+      if (flashAlpha > 0) \{\
+        fill(255, 255, 255, flashAlpha);\
+        noStroke();\
+        rect(0, 0, width, height);\
+        flashAlpha -= 15;\
+      \}\
+    \}\
+\
+    function checkShoulderHover() \{\
+      let charX = width / 2;\
+      let charY = height - 250;\
+      let scale = 1.8;\
+      let leftShoulderX = charX + (-60) * scale;\
+      let leftShoulderY = charY + (15) * scale;\
+      let shoulderWidth = 30 * scale;\
+      let shoulderHeight = 50 * scale;\
+      let rightShoulderX = charX + (60) * scale;\
+      let rightShoulderY = charY + (15) * scale;\
+      \
+      if (mouseX > leftShoulderX - shoulderWidth/2 && \
+          mouseX < leftShoulderX + shoulderWidth/2 &&\
+          mouseY > leftShoulderY - shoulderHeight/2 && \
+          mouseY < leftShoulderY + shoulderHeight/2) \{\
+        leftShoulderLift = lerp(leftShoulderLift, shoulderLiftAmount, 0.2);\
+      \} else \{\
+        leftShoulderLift = lerp(leftShoulderLift, 0, 0.2);\
+      \}\
+      \
+      if (mouseX > rightShoulderX - shoulderWidth/2 && \
+          mouseX < rightShoulderX + shoulderWidth/2 &&\
+          mouseY > rightShoulderY - shoulderHeight/2 && \
+          mouseY < rightShoulderY + shoulderHeight/2) \{\
+        rightShoulderLift = lerp(rightShoulderLift, shoulderLiftAmount, 0.2);\
+      \} else \{\
+        rightShoulderLift = lerp(rightShoulderLift, 0, 0.2);\
+      \}\
+    \}\
+\
+    function mousePressed() \{\
+      flashAlpha = 255;\
+      flashRadius = 50;\
+      isSmiling = true;\
+      smileTimer = 60;\
+    \}\
+\
+    function drawRabbit(x, y, s) \{\
+      push();\
+      translate(x, y);\
+      scale(s);\
+      stroke(0);\
+      strokeWeight(2);\
+      fill(255);\
+      fill(0);\
+      ellipse(0, -119, 210, 238);\
+      fill(0);\
+      ellipse(0, -40, 160, 140);\
+      fill(255, 238, 238);\
+      stroke(224);\
+      strokeWeight(0);\
+      rect(-25, -40, 50, 65);\
+      rectMode(CENTER);\
+      fill(255, 255, 255);\
+      stroke(255);\
+      strokeWeight(0);\
+      rect(0, 72.5, 230, 165, 20);\
+      fill(255, 238, 238);\
+      stroke(224);\
+      strokeWeight(0);\
+      rect(0, 15, 90, 50);\
+      fill(220, 190, 190);\
+      noStroke();\
+      ellipse(-34, 7 - leftShoulderLift/s, 36, 8);\
+      ellipse(34, 7 - rightShoulderLift/s, 36, 8);\
+      fill(255);\
+      stroke(224);\
+      strokeWeight(0);\
+      rect(-80, 18 - leftShoulderLift/s, 70, 55, 15, 15, 5, 5);\
+      rect(80, 18 - rightShoulderLift/s, 70, 55, 15, 15, 5, 5);\
+      fill(200, 175, 175);\
+      noStroke();\
+      ellipse(0, -99, 100, 140);\
+      fill(255, 238, 238);\
+      noStroke();\
+      ellipse(0, -108, 140, 148);\
+      stroke(0);\
+      strokeWeight(1.3);\
+      line(0, -103, -3, -93);\
+      line(-3, -93, 4.5, -91.5);\
+      \
+      let earWidth = isSurprised ? 24 : 20;\
+      let earHeight = isSurprised ? 33 : 27;\
+      fill(255, 238, 238);\
+      noStroke();\
+      ellipse(-75, -110, earWidth, earHeight);\
+      ellipse(75, -110, earWidth, earHeight);\
+      stroke(0);\
+      strokeWeight(1);\
+      line(-80, -112, -73, -112);\
+      line(80, -112, 73, -112);\
+      line(-76.3, -112, -76.3, -107);\
+      line(76.3, -112, 76.3, -107);\
+      \
+      if (isSurprised) \{\
+        fill(200, 140, 140);\
+        noStroke();\
+        ellipse(0, -75, 20, 25);\
+      \} else if (isSmiling) \{\
+        fill(200, 140, 140);\
+        noStroke();\
+        arc(0, -75, 42, 32, 0, PI);\
+        fill(255, 220, 220, 180);\
+        noStroke();\
+        ellipse(-blushXOffset, blushYOffset, blushWidth, blushHeight);\
+        ellipse(blushXOffset, blushYOffset, blushWidth, blushHeight);\
+      \} else \{\
+        fill(200, 140, 140);\
+        noStroke();\
+        arc(0, -75, 35, 25, 0, PI);\
+      \}\
+     \
+      push();\
+      translate(hairSwingX, -133);\
+      fill(0);\
+      arc(0, 0, 100, 140, PI, TWO_PI);\
+      pop();\
+      push();\
+      translate(hairSwingX, -133);\
+      fill(255, 238, 238);\
+      noStroke();\
+      ellipse(-10, -7, 6, 25);\
+      pop();\
+\
+      if (!isBlinking) \{\
+        if (isSurprised) \{\
+          noFill();\
+          stroke(0);\
+          strokeWeight(2);\
+          arc(-31, -116, 32, 32, PI, TWO_PI);\
+          arc(31, -116, 32, 32, PI, TWO_PI);\
+          fill(255);\
+          noStroke();\
+          ellipse(-30, -117, 32, 30);\
+          ellipse(30, -117, 32, 30);\
+          fill(0);\
+          noStroke();\
+          ellipse(-28, -117, 18, 22);\
+          ellipse(28, -117, 18, 22);\
+          fill(255);\
+          noStroke();\
+          ellipse(-28, -122, 4, 4);\
+          ellipse(28, -122, 4, 4);\
+        \} else \{\
+          noFill();\
+          stroke(0);\
+          strokeWeight(2);\
+          arc(-31, -116, 27, 22, PI, TWO_PI);\
+          arc(31, -116, 27, 22, PI, TWO_PI);\
+          fill(255);\
+          noStroke();\
+          ellipse(-30, -117, 27, 21);\
+          ellipse(30, -117, 27, 21);\
+          fill(0);\
+          noStroke();\
+          ellipse(-28 + pupilOffsetX, -117 + pupilOffsetY, 15, 18);\
+          ellipse(28 + pupilOffsetX, -117 + pupilOffsetY, 15, 18);\
+          fill(255);\
+          noStroke();\
+          ellipse(-28 + pupilOffsetX, -121 + pupilOffsetY, 3, 3);\
+          ellipse(28 + pupilOffsetX, -121 + pupilOffsetY, 3, 3);\
+        \}\
+      \} else \{\
+        stroke(0);\
+        strokeWeight(2);\
+        noFill();\
+        line(-44, -116, -18, -116);\
+        line(18, -116, 44, -116);\
+      \}\
+      pop();\
+    \}\
+\
+    function keyPressed() \{\
+      isSurprised = true;\
+      surpriseTimer = 90;\
+    \}\
+  </script>\
+</body>\
+</html>\
+}
